@@ -1,0 +1,22 @@
+{
+  "name": "cycle-weather",
+  "version": "0.0.0",
+  "description": "",
+  "author": "bobby <bobbijvoet@gmail.com>",
+  "main": "functions/__main__.js",
+  "dependencies": {
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5"
+  },
+  "private": true,
+  "stdlib": {
+    "build": "faaslang",
+    "name": "bobby/cycle-weather",
+    "timeout": 10000,
+    "publish": true,
+    "personalize": {
+      "keys": [],
+      "user": []
+    }
+  }
+}
