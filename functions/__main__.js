@@ -1,22 +1,52 @@
 const request = require('request');
+const send = require('../helpers/send.js');
+const lib = require('lib');
+
 
 /**
-* A basic Hello World function
-* @param {string} name Who you're saying hello to
-* @returns {string}
-*/
+ * A Weather SMS function
+ * @returns {string}
+ */
+const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+module.exports = (context, callback) => {
 
-module.exports = (name = 'world', context, callback) => {
-
-    request('https://api.darksky.net/forecast/27241d6e886644e874d3c4010c324dc5/52.3594,4.9255?lang=nl&exclude=[currently,minutely,alert,flags]', function (error, response, body) {
+    request(`https://api.darksky.net/forecast/${process.env.DARK_SKY_API_KEY}/52.3594,4.9255?lang=nl&exclude=[currently,minutely,alert,flags]`, function (error, response, body) {
         const data = JSON.parse(body);
 
-        data.hourly.data.forEach((block)=> {
-            console.log(new Date(block.time * 1000).toISOString(), block.precipProbability);
+        const percipData = data.hourly.data.map((block) => {
+            //Local hours
+            const blockHour = new Date(block.time * 1000).getHours() - new Date().getTimezoneOffset() / 60;
+
+            //Check if today
+            if (new Date(block.time * 1000).getDay() !== new Date().getDay()) {
+                return;
+            }
+
+            //Check if between 8:00 to 10:00 and 17:00 to 19:00
+            if ((blockHour >= 8 && blockHour <= 10) || (blockHour >= 17 && blockHour <= 19)) {
+                return {
+                    time: block.time,
+                    precipProbability: block.precipProbability * 100
+                }
+            }
+        }).filter(value => !!value);
+
+        const percipMessage = percipData.map((block) => {
+            return (`${weekdays[new Date(block.time * 1000).getDay()]} ${new Date(block.time * 1000).getHours() - new Date().getTimezoneOffset() / 60}h : ${block.precipProbability.toFixed()}%`);
         });
-        callback(null, JSON.stringify(data.hourly.summary));
+
+        send(
+            process.env.RECIPIENT_NUMBER,
+            percipMessage.join('\n'),
+            null,
+            (err, result) => {
+                if (err) {
+                    return callback(err);
+                }
+                return callback(null, {status: 'sent', message: percipMessage.join('\n'), tel: process.env.RECIPIENT_NUMBER});
+            }
+        );
 
     });
-
 };

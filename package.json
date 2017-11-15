@@ -5,8 +5,11 @@
   "author": "bobby <bobbijvoet@gmail.com>",
   "main": "functions/__main__.js",
   "dependencies": {
+    "lib": "^3.0.1",
+    "puppeteer": "^0.13.0",
     "request": "^2.83.0",
-    "request-promise-native": "^1.0.5"
+    "request-promise-native": "^1.0.5",
+    "twilio": "^3.9.3"
   },
   "private": true,
   "stdlib": {
